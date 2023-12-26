@@ -32,8 +32,7 @@ class CCommand extends Command
     protected function configure()
     {
         $this->setName('c')
-            ->setDescription('Alias for the git commit command')
-            ->addOption('build', 'b', InputOption::VALUE_NONE, 'Build the project before committing');
+            ->setDescription('Alias for the git commit command');
     }
 
     /**
