@@ -2,9 +2,9 @@
 
 namespace MrShennawy\Committer;
 
-use RuntimeException;
+use MrShennawy\Committer\git\Add;
+use MrShennawy\Committer\Traits\RunCommands;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -15,6 +15,8 @@ use Symfony\Component\Process\Process;
 
 class CCommand extends Command
 {
+    use RunCommands;
+
     const COMMIT_TYPES = [
         'FEATURE' => '<options=bold>FEATURE</>: A new feature for the user.',
         'FIX' => '<options=bold>FIX</>: A bug fix for the user.',
@@ -22,7 +24,8 @@ class CCommand extends Command
         'DOCS' => '<options=bold>DOCS</>: Documentation changes.',
         'STYLE' => '<options=bold>STYLE</>: Code style changes (whitespace, formatting).',
         'REFACTOR' => '<options=bold>REFACTOR</>: Code changes that neither fix a bug nor add a feature.',
-        'TEST' => '<options=bold>TEST</>: Adding or modifying tests.'
+        'TEST' => '<options=bold>TEST</>: Adding or modifying tests.',
+        'BUILD' => '<options=bold>BUILD</>: npm run build.'
     ];
     /**
      * Configure the command options.
@@ -32,17 +35,18 @@ class CCommand extends Command
     protected function configure()
     {
         $this->setName('c')
-            ->setDescription('Alias for the git commit command');
+            ->setDescription('Alias for the git commit command')
+            ->addOption('build', 'b', InputOption::VALUE_NONE, 'build');
     }
 
     /**
      * Execute the command.
      *
-     * @param \Symfony\Component\Console\Input\InputInterface $input
-     * @param \Symfony\Component\Console\Output\OutputInterface $output
+     * @param InputInterface $input
+     * @param OutputInterface $output
      * @return int
      */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $output->write("<fg=yellow>
      ██████╗ ██████╗ ███╗   ███╗███╗   ███╗██╗████████╗████████╗███████╗██████╗ 
@@ -59,14 +63,33 @@ class CCommand extends Command
             die;
         }
 
-        $type = array_search($this->commitType($input, $output), self::COMMIT_TYPES);
-        $output->writeln("<bg=yellow;fg=black> => $type </>");
+        // (new Add())->gitStatus();
 
-        $commitSentence = $this->commitSentence($input, $output);
-        $output->writeln("<bg=yellow;fg=black> => $type: $commitSentence </>");
+        if ($input->getOption('build')) {
+            $buildCmd = "npm run build";
+            $question = new Question("Enter the build command", $buildCmd);
+            $buildCmd = (new SymfonyStyle($input, $output))->askQuestion($question);
 
-        $issueId = $this->issueId($input, $output);
-        $output->writeln("<bg=yellow;fg=black> The commit =></><fg=green> {$type}</>: <fg=white>{$commitSentence}</>" . ($issueId ? " - <fg=yellow>$issueId </>" : "") . PHP_EOL);
+            $question = new ChoiceQuestion("Enter the number of build env", [
+                'local', 'stg', 'prod'
+            ]);
+            $buildEnv = (new SymfonyStyle($input, $output))->askQuestion($question);
+            $buildCmd = "$buildCmd".($buildEnv != 'local' ? ":$buildEnv" : '');
+            $this->runCommands([$buildCmd], $input, $output);
+            $type = 'BUILD';
+            $commitSentence = $buildCmd;
+            $issueId = null;
+        } else {
+            $type = array_search($this->commitType($input, $output), self::COMMIT_TYPES);
+            $output->writeln("<bg=yellow;fg=black> => $type </>");
+
+            $commitSentence = $this->commitSentence($input, $output);
+            $output->writeln("<bg=yellow;fg=black> => $type: $commitSentence </>");
+
+            $issueId = $this->issueId($input, $output);
+            $output->writeln("<bg=yellow;fg=black> The commit =></><fg=green> {$type}</>: <fg=white>{$commitSentence}</>" . ($issueId ? " - <fg=yellow>$issueId </>" : "") . PHP_EOL);
+        }
+
 
         $message = "{$type}: $commitSentence" . ($issueId ? " - $issueId" : "");
         if (($process = $this->commitChanges($message, $input, $output))->isSuccessful()) {
@@ -77,7 +100,8 @@ class CCommand extends Command
         return $process->getExitCode();
     }
 
-    private function isGitRepositoryInParent($directory) {
+    private function isGitRepositoryInParent($directory): bool
+    {
         $currentDirectory = realpath($directory);
         while ($currentDirectory !== '/' && $currentDirectory !== false) {
             if (file_exists("$currentDirectory/.git"))
@@ -116,11 +140,11 @@ class CCommand extends Command
      * Commit any changes in the current working directory.
      *
      * @param string $message
-     * @param \Symfony\Component\Console\Input\InputInterface $input
-     * @param \Symfony\Component\Console\Output\OutputInterface $output
+     * @param InputInterface $input
+     * @param OutputInterface $output
      * @return Process
      */
-    protected function commitChanges(string $message, InputInterface $input, OutputInterface $output)
+    protected function commitChanges(string $message, InputInterface $input, OutputInterface $output): Process
     {
         $commands = [
             'git add .',
@@ -130,57 +154,5 @@ class CCommand extends Command
         ];
 
         return $this->runCommands($commands, $input, $output);
-    }
-
-    /**
-     * Run the given commands.
-     *
-     * @param array $commands
-     * @param \Symfony\Component\Console\Input\InputInterface $input
-     * @param \Symfony\Component\Console\Output\OutputInterface $output
-     * @param array $env
-     * @return \Symfony\Component\Process\Process
-     */
-    protected function runCommands($commands, InputInterface $input, OutputInterface $output, array $env = [])
-    {
-        if (!$output->isDecorated()) {
-            $commands = array_map(function ($value) {
-                if (substr($value, 0, 5) === 'chmod') return $value;
-
-                if (substr($value, 0, 3) === 'git') return $value;
-
-                return $value . ' --no-ansi';
-            }, $commands);
-        }
-
-        if ($input->getOption('quiet')) {
-            $commands = array_map(function ($value) {
-                if (substr($value, 0, 5) === 'chmod') {
-                    return $value;
-                }
-
-                if (substr($value, 0, 3) === 'git') {
-                    return $value;
-                }
-
-                return $value . ' --quiet';
-            }, $commands);
-        }
-
-        $process = Process::fromShellCommandline(implode(' && ', $commands), null, $env, null, null);
-
-        if ('\\' !== DIRECTORY_SEPARATOR && file_exists('/dev/tty') && is_readable('/dev/tty')) {
-            try {
-                $process->setTty(true);
-            } catch (RuntimeException $e) {
-                $output->writeln('  <bg=yellow;fg=black> WARN </> ' . $e->getMessage() . PHP_EOL);
-            }
-        }
-
-        $process->run(function ($type, $line) use ($output) {
-            $output->write('    ' . $line);
-        });
-
-        return $process;
     }
 }
