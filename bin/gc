@@ -7,8 +7,9 @@ if (file_exists(__DIR__.'/../../../autoload.php')) {
     require __DIR__.'/../vendor/autoload.php';
 }
 
-$app = new Symfony\Component\Console\Application('Committer', '1.0.0');
-$app->add(new MrShennawy\Committer\CCommand);
-$app->setDefaultCommand('c');
+$app = new Symfony\Component\Console\Application('Committer', '1.0.1');
+$app->add(new MrShennawy\Committer\GcCommand);
+$app->add(new MrShennawy\Committer\TestCommand);
+$app->setDefaultCommand('commit');
 
 $app->run();
