@@ -2,9 +2,8 @@
 
 namespace MrShennawy\Committer;
 
-use MrShennawy\Committer\git\Add;
-use MrShennawy\Committer\git\Commit;
-use MrShennawy\Committer\git\Status;
+use MrShennawy\Committer\Git\{Add, Commit, Status};
+use MrShennawy\Committer\Support\Build;
 use MrShennawy\Committer\Traits\RunCommands;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -14,21 +13,12 @@ use Symfony\Component\Console\Question\ChoiceQuestion;
 use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Process\Process;
+use function Laravel\Prompts\text;
 
 class GcCommand extends Command
 {
     use RunCommands;
 
-    const COMMIT_TYPES = [
-        'FEATURE' => '<options=bold>FEATURE</>: A new feature for the user.',
-        'FIX' => '<options=bold>FIX</>: A bug fix for the user.',
-        'CHORE' => '<options=bold>CHORE</>: Routine tasks, maintenance, or refactors.',
-        'DOCS' => '<options=bold>DOCS</>: Documentation changes.',
-        'STYLE' => '<options=bold>STYLE</>: Code style changes (whitespace, formatting).',
-        'REFACTOR' => '<options=bold>REFACTOR</>: Code changes that neither fix a bug nor add a feature.',
-        'TEST' => '<options=bold>TEST</>: Adding or modifying tests.',
-        'BUILD' => '<options=bold>BUILD</>: npm run build.'
-    ];
     /**
      * Configure the command options.
      *
@@ -52,33 +42,20 @@ class GcCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $this->greetings($input, $output);
-        
-        $selectFiles = $input->getOption('select') ? (new Add)->handle() : '.';
-
-        // Handle the commit sentence
-        $commitSentence = (new Commit)->handle();
 
         if ($input->getOption('build')) {
-            $buildCmd = "npm run build";
-            $question = new Question("Enter the build command", $buildCmd);
-            $buildCmd = (new SymfonyStyle($input, $output))->askQuestion($question);
-
-            $question = new ChoiceQuestion("Enter the number of build env", [
-                'local', 'stg', 'prod'
-            ]);
-            $buildEnv = (new SymfonyStyle($input, $output))->askQuestion($question);
-            $buildCmd = "$buildCmd".($buildEnv != 'local' ? ":$buildEnv" : '');
-            $this->runCommands([$buildCmd], $input, $output);
-            $type = 'BUILD';
-            $commitSentence = $buildCmd;
-            $issueId = null;
+            $commitSentence = (new Build)->command($input, $output);
+        } else {
+            $selectFiles = $input->getOption('select') ? (new Add)->handle() : '.';
+            // Handle the commit sentence
+            $commitSentence = (new Commit)->handle();
         }
 
         if (($process = $this->commitChanges(
             input: $input,
             output: $output,
             message: $commitSentence,
-            files: $selectFiles
+            files: $selectFiles ?? '.'
         ))->isSuccessful()) {
             $output->write(PHP_EOL);
             $output->writeln(' <bg=blue;fg=white> INFO </> your code published successful!' . PHP_EOL);

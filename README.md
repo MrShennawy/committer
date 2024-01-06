@@ -27,7 +27,7 @@ Committer utilizes [Composer](https://getcomposer.org/) to manage its dependenci
 ```bash
 composer global require mrshennawy/committer
 ```
-Make sure to place Composer's system-wide vendor bin directory in your `$PATH` so the laravel executable can be located by your system. This directory exists in different locations based on your operating system; however, some common locations include:
+Make sure to place Composer's system-wide vendor bin directory in your `$PATH` so the Committer executable can be located by your system. This directory exists in different locations based on your operating system; however, some common locations include:
 
 - macOS: `$HOME/.composer/vendor/bin`
   - ```bash

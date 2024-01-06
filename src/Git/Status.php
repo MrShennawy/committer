@@ -1,6 +1,6 @@
 <?php
 
-namespace MrShennawy\Committer\git;
+namespace MrShennawy\Committer\Git;
 
 use Symfony\Component\Process\Process;
 

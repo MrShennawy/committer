@@ -1,6 +1,6 @@
 <?php
 
-namespace MrShennawy\Committer\git;
+namespace MrShennawy\Committer\Git;
 use MrShennawy\Committer\Traits\RunCommands;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
