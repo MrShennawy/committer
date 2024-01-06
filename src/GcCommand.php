@@ -11,6 +11,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Process\Process;
+use function Laravel\Prompts\spin;
 
 /**
  * Class GcCommand
@@ -132,7 +133,9 @@ class GcCommand extends Command
             'git pull',
             'git push',
         ];
-
-        return $this->runCommands($commands, $input, $output);
+        return spin(
+            fn () => $this->runCommands($commands, $input, $output),
+            'Pushing updates'
+        );
     }
 }
