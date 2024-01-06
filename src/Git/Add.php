@@ -2,13 +2,8 @@
 
 namespace MrShennawy\Committer\Git;
 use MrShennawy\Committer\Traits\RunCommands;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Style\SymfonyStyle;
-use Symfony\Component\Process\Process;
 use function Laravel\Prompts\{
     multiselect,
-    info,
     confirm
 };
 
@@ -47,6 +42,7 @@ class Add
 
         $addAll = confirm(
             label: 'You will add all files, Are you sure?',
+            default: false,
             no: 'Select files',
             hint: "Use the space bar to select Files!");
 
