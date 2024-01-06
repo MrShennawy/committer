@@ -9,12 +9,15 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Question\ChoiceQuestion;
-use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Process\Process;
-use function Laravel\Prompts\text;
 
+/**
+ * Class GcCommand
+ *
+ * This class represents a command for committing changes to a git repository.
+ * It extends the Command class and uses the RunCommands trait.
+ */
 class GcCommand extends Command
 {
     use RunCommands;
@@ -65,6 +68,12 @@ class GcCommand extends Command
     }
 
 
+    /**
+     * Displays a greeting message and performs additional checks.
+     *
+     * @param InputInterface $input The input interface object.
+     * @param OutputInterface $output The output interface object.
+     */
     private function greetings(InputInterface $input, OutputInterface $output)
     {
         $output->write("<fg=yellow>
@@ -84,11 +93,16 @@ class GcCommand extends Command
         }
 
         // Check files status
-        (new Status)->command();
+        if (!$input->getOption('build')) (new Status)->command();
     }
 
-
-    private function isGitRepositoryInParent($directory): bool
+    /**
+     * Check if the given directory or any of its parent directories contain a Git repository.
+     *
+     * @param string $directory The directory to check.
+     * @return bool Returns true if a Git repository is found, false otherwise.
+     */
+    private function isGitRepositoryInParent(string $directory): bool
     {
         $currentDirectory = realpath($directory);
         while ($currentDirectory !== '/' && $currentDirectory !== false) {
@@ -100,14 +114,15 @@ class GcCommand extends Command
         return false; // Git repository not found in any parent directory
     }
 
+
     /**
-     * Commit any changes in the current working directory.
+     * Commits changes to Git repository.
      *
-     * @param InputInterface $input
-     * @param OutputInterface $output
-     * @param string $message
-     * @param string $files
-     * @return Process
+     * @param InputInterface $input The input interface object.
+     * @param OutputInterface $output The output interface object.
+     * @param string $message The commit message.
+     * @param string $files The files to commit. Defaults to '.' (the entire directory).
+     * @return Process The process object representing the Git command execution.
      */
     protected function commitChanges(InputInterface $input, OutputInterface $output, string $message, string $files = '.'): Process
     {

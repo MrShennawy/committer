@@ -16,12 +16,25 @@ class Add
 {
     use RunCommands;
 
+    /**
+     * Handle method
+     * This method is responsible for handling files.
+     *
+     * @return string The selected files separated by a space, or '.' if no files are selected.
+     */
     public function handle(): string
     {
         $files = (new Status)->handelFiles();
         return $this->selectFiles($files);
     }
 
+    /**
+     * Select files from the given options.
+     *
+     * @param array $files The list of files to choose from.
+     *
+     * @return string The selected files, separated by spaces.
+     */
     private function selectFiles($files): string
     {
         $selectedFiles = multiselect(

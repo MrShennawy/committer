@@ -8,9 +8,7 @@
 <p align="center">
   <img width="600" src="docs/assets/committer.svg">
 </p>
-
-
-**committer** is a Composer package that streamlines the process of writing standard Git commit messages. It helps developers maintain a consistent and clean commit history.
+**committer** is a Composer package that simplifies the process of writing standard Git commit messages. It helps developers maintain a consistent and clean commit history.
 
 ## Table of Contents
 
@@ -18,16 +16,12 @@
 2. [Usage](#usage)
 3. [Authors](#authors)
 4. [License](#license)
-
+  
 ## Installation
 
-Committer utilizes [Composer](https://getcomposer.org/) to manage its dependencies. So, before using Committer, make sure you have Composer installed on your machine.
-
-
-```bash
-composer global require mrshennawy/committer
-```
-Make sure to place Composer's system-wide vendor bin directory in your `$PATH` so the Committer executable can be located by your system. This directory exists in different locations based on your operating system; however, some common locations include:
+Committer uses [Composer](https://getcomposer.org/) to manage its dependencies. Make sure you have Composer installed on your machine before using Committer.
+You must place Composer's system-wide vendor bin directory in your `$PATH` so that your system can locate the Committer executable.
+This directory exists in different locations based on your operating system. Some common locations include:
 
 - macOS: `$HOME/.composer/vendor/bin`
   - ```bash
@@ -42,22 +36,21 @@ Make sure to place Composer's system-wide vendor bin directory in your `$PATH` s
   - ```bash
     export PATH=$PATH:$HOME/.composer/vendor/bin`
 
-You could also find the composer's global installation path by running `composer global about` and looking up from the first line.
+You can also find the global installation path of Composer by running `composer global about` and looking for it in the first line. 
 
 ## Usage
 
-After installing the package, you can use it by running the following command:
-
-```bash
-gc
-```
+After installing the package, you can use it by running only `gc`:
+- The `gc` command now supports the following options:
+  - `--select`: This option allows to select the files before committing. It can be used as `gc --select` or `gc -s`.
+  - `--build`: This option builds the project before commit. It can be used as `gc --build` or `gc -b`.
 
 ## Authors
 
 - Mahmoud Shennawy  | [GitHub](https://github.com/MrShennawy)  | [LinkedIn](https://www.linkedin.com/in/mrshennawy) | <m.alshenaawy@gmail.com>
 
-See also the list of [contributors](https://github.com/mrshennawy/committer/contributors) who participated in this project.
+You can also see the list of [contributors](https://github.com/mrshennawy/committer/contributors) who participated in this project.
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
+This project is licensed under the MIT License. See the file [LICENSE.md](LICENSE.md) for details.

@@ -6,6 +6,15 @@ use function Laravel\Prompts\{alert, info, select, table, text};
 
 class Commit
 {
+    /**
+     * Define a constant array of commit types and their descriptions.
+     *
+     * The commit type is used to categorize and describe the purpose of a commit.
+     * Each commit type has its own description which explains the purpose of the commit.
+     * The descriptions are formatted using bold text to make them more noticeable.
+     *
+     * @var array COMMIT_TYPES An associative array of commit types and descriptions.
+     */
     const COMMIT_TYPES = [
         'FEATURE' => '<options=bold>FEATURE</>: A new feature for the user.',
         'FIX' => '<options=bold>FIX</>: A bug fix for the user.',
@@ -17,6 +26,11 @@ class Commit
         'BUILD' => '<options=bold>BUILD</>: npm run build.'
     ];
 
+    /**
+     * Handles the commit process.
+     *
+     * @return string The commit sentence generated.
+     */
     public function handle()
     {
         $type = $this->commitType();
@@ -28,11 +42,21 @@ class Commit
         return $commitSentence;
     }
 
+    /**
+     * Retrieves the desired commit type from the user.
+     *
+     * @return int|string The selected commit type.
+     */
     private function commitType(): int|string
     {
         return select(label: "Select the desired commit type", options: self::COMMIT_TYPES, scroll: 10);
     }
 
+    /**
+     * Generates a commit sentence.
+     *
+     * @return string The commit sentence entered by the user.
+     */
     private function commitSentence()
     {
         return text(
@@ -42,6 +66,14 @@ class Commit
         );
     }
 
+    /**
+     * Retrieves the issue ID from the user.
+     *
+     * @return string The issue ID entered by the user. If not specified, an empty string is returned.
+     *
+     * @see text() Helper function used to display a text input field.
+     * @see text() The function being used in this method.
+     */
     private function issueId()
     {
         return text(

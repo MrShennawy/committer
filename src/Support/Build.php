@@ -13,6 +13,14 @@ class Build
 {
     use RunCommands;
 
+    /**
+     * Executes the build command.
+     *
+     * @param InputInterface $input The input interface.
+     * @param OutputInterface $output The output interface.
+     *
+     * @return string The formatted command string.
+     */
     public function command(InputInterface $input, OutputInterface $output)
     {
         $buildCmd = text(
