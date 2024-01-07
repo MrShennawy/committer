@@ -20,6 +20,11 @@
 ## Installation
 
 Committer uses [Composer](https://getcomposer.org/) to manage its dependencies. Make sure you have Composer installed on your machine before using Committer.
+
+```bash
+composer global require mrshennawy/committer
+```
+
 You must place Composer's system-wide vendor bin directory in your `$PATH` so that your system can locate the Committer executable.
 This directory exists in different locations based on your operating system. Some common locations include:
 
